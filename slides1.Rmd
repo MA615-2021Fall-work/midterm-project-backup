@@ -1,0 +1,149 @@
+---
+title: "MIDTERM PROJECT"
+author: "Andrew Sisitzky,Chen Xu,Guangze Yu,Yuyang Li"
+date: "20201 November 1"
+output: 
+  revealjs::revealjs_presentation:
+    #template: hw_temp_1.html
+    theme: sky
+    highlight: pygments 
+    #css: reveal.css
+      
+---
+
+
+```{r setup, include=FALSE}
+library(png)
+library(grid)
+library(knitr)
+opts_chunk$set(echo = TRUE)
+source("eda.R")
+```
+
+
+
+
+# 
+
+<div style= "align:center; font-size:80px;">
+<p><br><br><b>
+DATA WRANGLING 
+</b>
+</p>
+
+</div>
+
+
+## Data clean-Strawberries.csv
+ - Take apart strawberries.csv and restructure, 
+ - Use <i><b>Year, State, Domain, Chemical, Chemical type, Value, units </i></b>as variable to get a new table
+ 
+ - Select data when<i><b> Domain = "CHEMICAL"</i></b>
+ 
+## Data clean-Strawberries.csv
+
+ - Empty rows were removed to make the data more compact
+ 
+ - The name of various pesticides were converted to uppercase letters for later matching
+
+## Data wrangling-left_join
+
+ - Function <i>left_join</i> is used to match the data by <i><b>"chemicaltype = pesticide" </i></b> 
+ 
+ - Combine them into one table for subsequent EDA
+ 
+ - Delete the missing value if <i><b>"Year = NA"</i></b>
+
+
+</section>
+
+# 
+<div style= "align:center; font-size:80px;">
+<p><br><br><b>
+MAKE JUDGEMENTS
+</b>
+</p>
+
+</div>
+
+
+## Give a number for toxins
+
+ - <b>For human</b>
+    + Carcinogen:<i>known=4,probable=3,possible=2,unknown=1</i>
+    
+    + Hormone.Disruptor:<i>suspected=2,unknown=1</i>
+    
+    + Neurotoxins:<i>present=2,unknown=1</i>
+    
+    + Developmental/ReproductiveToxins:<i>present=2,unknown=1</i>
+    
+
+ -  <b>For bee</b>
+ 
+    + Bee.Toxins:<i>high=4,moderate=3,slight=2,unknown=1</i>
+    
+## Calculate total toxins
+ -  <b>For human</b>
+ 
+    + Toxicity for human = <i>Carcinogen+HormoneDisruptor+Neurotoxins+ Developmental or Reproductive Toxins</i>
+     
+ -  <b>For bee</b>
+ 
+    + Toxicity for bee = <i>Bee.Toxins</i>  
+  
+
+
+</section>
+# 
+<div style= "align:center; font-size:80px;">
+<p><br><br><b>
+EDA
+</b>
+</p>
+
+</div>
+
+
+## Choose data to plot
+
+ - Select chemical types exist in <i><b>Pesticides.csv</i></b>
+ 
+ - Filter dataframe into subsets in different measurements
+    + MEASURED IN LB / ACRE / YEAR  AVG
+    + MEASURED IN PCT OF AREA BEARING  AVG
+    + MEASURED IN LB
+    + MEASURED IN LB / ACRE / APPLICATION  AVG
+    + MEASURED IN NUMBER  AVG
+
+## EDA PLOT 1
+
+ - Looking at the average lbs of strawberries harvested per acre in each state.Added color to show the toxicity level of each observation. 
+ 
+ - It appears that the harvests with higher lbs per acre also tend to be treated with chemicals that are rated higher by out <i><b>'toxicitylevelhuman'</i></b> variable.
+ 
+ 
+## 
+```{r}
+edaplot <- ggplot(data=chemical_clean_lbperacre,mapping=aes(x=State,y=Value))+geom_point(mapping=aes(color=toxicitylevelhuman))+scale_color_gradient(low="blue", high="red")+theme(axis.text.x = element_text(angle = 90))
+edaplot 
+```
+
+
+## EDA Plot 2
+
+ - Adding the <b>mean toxicity</b> of all observations in each state to the map.  
+ 
+ - This plot shows that, based on this dataset, the harvests in Oregon tended to use chemicals that were rated higher by our toxicity scale in comparison to other states.
+ 
+##
+
+```{r}
+edaplot2 <- ggplot() +geom_polygon( data=eda_subset, aes(x=long, y=lat, group=group,fill = mean_toxicity), color="white",size = 0.2)
+edaplot2
+```
+
+</section>
+
+
+
