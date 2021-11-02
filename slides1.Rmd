@@ -8,7 +8,6 @@ output:
     theme: sky
     highlight: pygments 
     #css: reveal.css
-      
 ---
 
 
@@ -16,8 +15,8 @@ output:
 library(png)
 library(grid)
 library(knitr)
-opts_chunk$set(echo = TRUE)
 source("eda.R")
+opts_chunk$set(echo = TRUE)
 ```
 
 

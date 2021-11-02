@@ -1,0 +1,87 @@
+---
+title: "EDA Document for MA615 Midterm Project"
+author: "Andrew Sisitzky, Daniel Xu, Guangze Yu, Yuyang Li"
+date: "November 2nd, 2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+pacman::p_load("tidyverse","ggplot2","dplyr", "maps", "treemapify")
+```
+
+__Topic we study:__
+
+How the human-harm pesticide usage differ as time passes in the major strawberries producing areas in the US.
+
+
+__Data wrangle and clean:__
+
+We began by get the data from USDA about strawberries harvest and treatments across the US in year 2016, 2018 and 2019 and a dataset about the pesticide types with their toxicity towards human(Carcinogen, Hormone.Disruptor, Neurotoxins and Developmental.or.Reproductive.Toxins) and bee.
+
+For data cleaning:
+Firstly, we merge those two dataset by the pesticide type and subset all the strawberries treated not as organic.
+Secondly, we design a variable called: toxicity level for human. To get the value for this variable, we first assigned the toxicity level for Carcinogen from 1 to 4, Hormone.Disruptor range from 1 and 2, Neurotoxins range from 1 and 2 and Developmental.or.Reproductive.Toxins range from 1 and 2, and add them to a new toxcity level range from 4 to 10, higher the toxcity level is, the more toxic the pesticide type is.
+Thirdly, we filtered the merged dataset to only include chemicals that were listed in our toxicity dataset. Therefore we only were left with the observations for which we had relevant data regarding their toxicity to humans.
+
+Clean for EDA:
+In order to do our EDA, we subset the data by each year and with a certain measurement. And we add a column store the frequency of chemical type for "Total Pesticide usage: 2016 vs. 2018 vs. 2019" and "Comparison of Pesdicide usage: 2016 vs. 2018 vs. 2019" these two plots. We also create three datasets storing the frequency of toxicity level to humans of each year to do the plot: "Pesticide Toxicitylevelhuman Frequency 2016 vs. 2018 vs. 2019". 
+
+```{r, include=FALSE, warning=FALSE}
+source("ultimate wrangle data.R", echo=TRUE)
+source("visualization_function_mid.R", echo=TRUE)
+```
+
+
+__The map for major strawberry producing area in the US(including the mean toxicity level for human)__
+
+In our initial analysis of the data, we created a map to visualize the mean toxicity of all observations for each state. We took data across all years, calculated the means, and plotted the results on a map of the United States. We found that California and Florida on average had lower human toxicity levels in strawberry treatments than Washington and Oregon. It appears that Oregon has the highest mean toxicity levels out of the four states from which we have data. 
+
+```{r,warning=FALSE, fig.width= 10, fig.height= 6}
+map_function(eda_subset)
+```
+
+__Total Pesticide usage: 2016 vs. 2018 vs. 2019__
+
+After our initial analysis of our data, we plot the total pesticide usage comparison for four states from 2016 to 2019 except 2017. From the bar chart, we can see that the pesticide usage is getting lower as time passes. 
+
+```{r,warning=FALSE,fig.width= 10, fig.height= 6}
+chemcialtype_freq_barchart_function(chemicaltype_freq)
+```
+
+
+
+__Comparison of Pesdicide usage: 2016 vs. 2018 vs. 2019__
+
+After we looked at the total usage of pesticides in our previous plot, we decided that we wanted to look deeper into the usage of pesticide over the years of data that we have access to. For this plot, we looked at each chemical type and plotted its frequency of usage across 3 years. 
+
+```{r,warning=FALSE,fig.width= 10, fig.height= 6}
+chemicaltype_freq_function(chemicaltype_freq)
+```
+
+
+
+__Pesticide Toxicitylevelhuman Frequency 2016 vs. 2018 vs. 2019__
+
+Now as we know the specific usage of each chemical type through 3 years. We want to dive deeper into the distribution of toxicity level that related to human for each year.
+
+```{r,warning=FALSE,fig.width= 10, fig.height= 6}
+human_toxicity_level_function(year1_toxicityhuman_freq) + ggtitle("Pesticide Toxicitylevelhuman Frequency 2016")
+```
+
+
+```{r,warning=FALSE,fig.width= 10, fig.height= 6}
+human_toxicity_level_function(year2_toxicityhuman_freq) + ggtitle("Pesticide Toxicitylevelhuman Frequency 2018")
+```
+
+
+```{r,warning=FALSE,fig.width= 10, fig.height= 6}
+human_toxicity_level_function(year3_toxicityhuman_freq) + ggtitle("Pesticide Toxicitylevelhuman Frequency 2019")
+```
+
+After we view all the three plots about the distribution, we conclude that althought the total amount of chemical be used across the 3 years decreased, the propotion of toxicitylevel remains relatively the same. We can say that even though the amount of chemicals they are treating the strawberries with is decreasing, those that they are using are still known to be toxic to humans. 
+
+
+

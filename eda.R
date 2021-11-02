@@ -1,9 +1,10 @@
-source("ultimate data wrangle and clean.R")
+source("ultimate wrangle data.R")
 
 
 library(ggplot2)
 library(maps)
-
+library(treemapify)
+library(tidyverse)
 ## 
 # chemical_clean <- chemical %>%
 #  filter(!grepl("(D)", Value)) %>%
@@ -98,7 +99,7 @@ print(edaplot)
 MainStates <- map_data("state")
 names(MainStates)[5] <- 'State'
 MainStates$State <- toupper(MainStates$State)
-MergedStates <- inner_join(MainStates, chemical_clean, by = "State")
+MergedStates <- full_join(MainStates, chemical_clean, by = "State")
 
 # Creating subset to plot this map
 eda_subset <- MergedStates %>%
@@ -115,5 +116,81 @@ edaplot2 <- ggplot() +
 # to use chemicals that were rated higher by our toxicity scale in
 # comparison to other states
 edaplot2 <- ggplot() +
-  geom_polygon( data=eda_subset, aes(x=long, y=lat, group=group, fill = mean_toxicity), color="white", size = 0.2) 
+  geom_polygon( data=eda_subset, aes(x=long, y=lat, group=group, fill = mean_toxicity), color="white", size = 0.2)+
+  ggtitle("The map for major strawberry producing area in the US")
 print(edaplot2)
+
+
+
+
+year1 <- subset(chemical_clean, Year == "2016" & measurement == " MEASURED IN LB  ")
+
+year2 <- subset(chemical_clean, Year == "2018" & measurement == " MEASURED IN LB  ")
+
+year3 <- subset(chemical_clean, Year == "2019" & measurement == " MEASURED IN LB  ")
+
+
+year1_chemicaltype_freq <- data.frame(table(year1$Chemicaltype))
+year1_chemicaltype_freq$year <- 2016
+colnames(year1_chemicaltype_freq)[1] <- c("Chemicaltype")
+
+year2_chemicaltype_freq <- data.frame(table(year2$Chemicaltype))
+year2_chemicaltype_freq$year <- 2018
+colnames(year2_chemicaltype_freq)[1] <- c("Chemicaltype")
+
+
+year3_chemicaltype_freq <- data.frame(table(year3$Chemicaltype))
+year3_chemicaltype_freq$year <- 2019
+colnames(year3_chemicaltype_freq)[1] <- c("Chemicaltype")
+
+chemicaltype_freq <- rbind(year1_chemicaltype_freq,year2_chemicaltype_freq,year3_chemicaltype_freq)
+chemicaltype_freq$year <- factor(chemicaltype_freq$year)
+
+ggplot(data = chemicaltype_freq, aes(x = year, y = Freq, fill = year)) + 
+  geom_bar(position="dodge", stat="identity")+
+  facet_wrap(~Chemicaltype)+
+  ggtitle("Comparison of Pesidicide usage: 2016 vs. 2018 vs. 2019")
+
+
+
+ggplot(data = chemicaltype_freq)+
+  geom_bar(stat="identity") + aes(x = year, y = Freq, fill = Chemicaltype)
+
+
+year1_toxicityhuman_freq <- data.frame(table(year1$toxicitylevelhuman))
+year1_toxicityhuman_freq <- year1_toxicityhuman_freq[-c(1),] 
+colnames(year1_toxicityhuman_freq)[1] <- c("Toxicityhumenlevel")
+year1_toxicityhuman_freq <-year1_toxicityhuman_freq %>% mutate(FreqPerc = Freq/sum(Freq))
+year1_toxicityhuman_freq$FreqPerc <- round(year1_toxicityhuman_freq$FreqPerc, digits = 2)
+
+year2_toxicityhuman_freq <- data.frame(table(year2$toxicitylevelhuman))
+year2_toxicityhuman_freq <- year2_toxicityhuman_freq[-c(1),]
+colnames(year2_toxicityhuman_freq)[1] <- c("Toxicityhumenlevel")
+year2_toxicityhuman_freq <-year2_toxicityhuman_freq %>% mutate(FreqPerc = Freq/sum(Freq))
+year2_toxicityhuman_freq$FreqPerc <- round(year2_toxicityhuman_freq$FreqPerc, digits = 2)
+
+year3_toxicityhuman_freq <- data.frame(table(year3$toxicitylevelhuman))
+year3_toxicityhuman_freq <- year3_toxicityhuman_freq[-c(1),]
+colnames(year3_toxicityhuman_freq)[1] <- c("Toxicityhumenlevel")
+year3_toxicityhuman_freq <-year3_toxicityhuman_freq %>% mutate(FreqPerc = Freq/sum(Freq))
+year3_toxicityhuman_freq$FreqPerc <- round(year3_toxicityhuman_freq$FreqPerc, digits = 2)
+
+
+
+
+
+
+human_toxicity_level_function <- function(data){
+  ggplot(data)+
+    geom_treemap(stat = "identity") +
+    aes(area = Freq, fill= Toxicityhumenlevel, label = FreqPerc) + 
+    geom_treemap_text(
+      color = "white",
+      place = "center",
+      size = 15
+    )
+}
+  
+
+human_toxicity_level_function(year1_toxicityhuman_freq) + ggtitle("Pesticide Toxicitylevelhuman Frequency 2016")
+human_toxicity_level_function(year2_toxicityhuman_freq) + ggtitle("Pesticide Toxicitylevelhuman Frequency 2018")
